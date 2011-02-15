@@ -1,5 +1,4 @@
 A work in early progress...
 
-See a demo here: [http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html](http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html)
-
-View source is enable in the demo so you can see how the component is used.
+See a test of the component here: [http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html](http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html)
+(View source is enabled).
