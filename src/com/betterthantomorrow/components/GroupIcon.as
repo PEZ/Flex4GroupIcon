@@ -53,7 +53,8 @@ package com.betterthantomorrow.components {
 				_mainIconURL = v;
 				var loader:Loader = new Loader();
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
-					function(e:Event):void {
+					function oc(e:Event):void {
+						loader.removeEventListener(Event.COMPLETE, oc);
 						var li:LoaderInfo = e.currentTarget as LoaderInfo;
 						_mainIcon = new Image();
 						_mainIcon.smoothBitmapContent = true;
@@ -117,16 +118,16 @@ package com.betterthantomorrow.components {
 			var croppedBitmap:Bitmap = new Bitmap(new BitmapData( _width, _height ), PixelSnapping.ALWAYS, true);
 			var scaling:Point = scaleRatios(bm, _width);
 			var m:Matrix = new Matrix(scaling.x, 0, 0, scaling.y, _x, _y);
-			croppedBitmap.bitmapData.draw(bm, m, null, null, cropArea, true );
+			croppedBitmap.bitmapData.draw(bm, m, null, null, cropArea, true);
 			return croppedBitmap;
 		}
 
 		private function squareCropCoords(bm:Bitmap, size:Number):Point {
 			var cropX:Number = 0;
 			var cropY:Number = 0;
-			
+			var ratio:Number = bm.height / bm.width;
 			if (bm.width > bm.height) {
-				cropX = bm.width / 2 - bm.height / 2;
+				cropX = -(size / bm.height) * (bm.width - bm.height) / 2;
 			}
 
 			return new Point(cropX, cropY);
@@ -137,7 +138,7 @@ package com.betterthantomorrow.components {
 			var xScale:Number;
 			var yScale:Number;
 			if (bm.width > bm.height) {
-				xScale = ratio * size / bm.width; 
+				xScale = size / bm.width / ratio; 
 				yScale = size / bm.height;
 			}
 			else {
@@ -154,7 +155,8 @@ package com.betterthantomorrow.components {
 			for each (var avatarItem:IGroupIconItem in _avatarItems) {
 				var loader:Loader = new Loader();
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
-					function(e:Event):void {
+					function oc(e:Event):void {
+						loader.removeEventListener(Event.COMPLETE, oc);
 						var li:LoaderInfo = e.currentTarget as LoaderInfo;
 						if (!(li.url in avatars)) {
 							var avatar:Bitmap = li.content as Bitmap;
