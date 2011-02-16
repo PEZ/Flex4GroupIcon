@@ -4,6 +4,7 @@ package com.betterthantomorrow.components {
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;
 	import flash.display.PixelSnapping;
+	import flash.display.Shape;
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -14,6 +15,7 @@ package com.betterthantomorrow.components {
 	import mx.collections.ArrayCollection;
 	import mx.controls.Image;
 	import mx.core.FlexGlobals;
+	import mx.core.UIComponent;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 	import mx.styles.CSSStyleDeclaration;
@@ -47,6 +49,7 @@ package com.betterthantomorrow.components {
 		private var _mainIcon:Image;
 		[Bindable] private var _avatarItems:ArrayCollection;
 		private var _avatarSize:Number;
+		private var _avatarSizeBleed:Number;
 		private var _mainIconSize:Number;
 		private var _oldWidth:Number;
 		
@@ -64,9 +67,10 @@ package com.betterthantomorrow.components {
 						_mainIcon.width = li.content.width;
 						_mainIcon.height = li.content.height;
 						updateSizes(0);
+						var resultImage:Image = createResultImage();
+						addMainIcon(resultImage);
 						removeAllElements();
-						addMainIcon();
-						//invalidateDisplayList();
+						addElement(resultImage);
 					});
 				loader.load(new URLRequest(_mainIconURL));
 			}
@@ -86,14 +90,42 @@ package com.betterthantomorrow.components {
 			}
 		}
 		
+		private function createResultImage():Image {
+			var resultImage:Image = new Image();
+			resultImage.width = width;
+			resultImage.height = height;
+			resultImage.x = -_borderWeight - _avatarSizeBleed / 2;
+			resultImage.y = -_borderWeight - _avatarSizeBleed / 2;
+			return resultImage;
+		}
+		
 		override public function set width(v:Number):void {
 			if (v != _oldWidth) {
 				_oldWidth = width;
 				super.width = v;
+				super.height = v;
 			}
 		}
 		
-		
+		private function get _borderWeight():Number {
+			return getStyle("borderVisible") && !isNaN(getStyle("borderWeight")) ? getStyle("borderWeight") : 0;
+		}
+
+		private function get _cornerRadius():Number {
+			return !isNaN(getStyle("cornerRadius")) ? getStyle("cornerRadius") : 0;
+		}
+
+		private function createMask():UIComponent {
+			var maskShape:UIComponent = new UIComponent();
+			maskShape.graphics.beginFill(0xff0000);
+			maskShape.graphics.drawRoundRect(-0.5, -0.5,
+				width - _borderWeight * 2 + 1, height - _borderWeight * 2 + 1,
+				_cornerRadius * 2);
+			maskShape.graphics.endFill();
+			maskShape.visible = false;
+			return maskShape;
+		}
+
 		private function loadAvatars():void {
 			updateSizes(_avatarItems.length);
 			var avatars:Dictionary = new Dictionary();
@@ -111,33 +143,37 @@ package com.betterthantomorrow.components {
 							var avatarImage:Image = new Image();
 							avatarImage.addChild(crop(cropping.x, cropping.y, _avatarSize, _avatarSize, avatar));
 							avatars[li.url] = avatarImage;
+							var resultImage:Image = createResultImage();
+							addAvatars(avatars, resultImage);
+							addMainIcon(resultImage);
 							removeAllElements();
-							addAvatars(avatars);
-							addMainIcon();
+							addElement(resultImage);
+							var resultMask:UIComponent = createMask();
+							addElement(resultMask);
+							resultImage.mask = resultMask;
 						}
 					});
 				loader.load(new URLRequest(avatarItem.avatarURL));
 			}
 		}
-
-		private function innerWidth():Number {
-			return getStyle("borderVisible") ? width - getStyle("borderWeight") * 2 : width;
-		}
 		
 		private function updateSizes(numAvatars:int):void {
-			var w:Number = innerWidth();
+			var w:Number = width;
 			if (_mainIcon != null) {
 				_mainIconSize = w * getStyle("mainIconPercentSize") / 100;
 			}
 			if (numAvatars > 0) {
 				if (_avatarItems.length < 3) {
-					_avatarSize = Math.round(w / numAvatars);
+					_avatarSize = Math.ceil(w / numAvatars);
+					_avatarSizeBleed = _avatarSize * numAvatars - width;
 				}
 				else if (numAvatars < 9) {
-					_avatarSize = Math.round(w / 2);
+					_avatarSize = Math.ceil(w / 2);
+					_avatarSizeBleed = _avatarSize * 2 - width;
 				}
 				else {
-					_avatarSize = Math.round(w / 3);
+					_avatarSize = Math.ceil(w / 3);
+					_avatarSizeBleed = _avatarSize * 3 - width;
 				}
 			}
 		}
@@ -177,16 +213,16 @@ package com.betterthantomorrow.components {
 			return new Point(xScale, yScale);
 		}
 
-		private function addAvatars(avatars:Dictionary):void {
+		private function addAvatars(avatars:Dictionary, resultImage:Image):void {
 			for each (var avatar:Image in avatars) {
-				addElement(avatar);
+				resultImage.addChild(avatar);
 			}
 			placeAvatars(avatars);
 		}
 
-		private function addMainIcon():void {
+		private function addMainIcon(resultImage:Image):void {
 			if (_mainIcon != null) {
-				addElement(_mainIcon);
+				resultImage.addChild(_mainIcon);
 			}
 			placeMainIcon();
 		}
@@ -226,12 +262,12 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function placeMainIcon():void {
-			var w:Number = innerWidth();
 			if (_mainIcon != null) {
+				//var ratio = _mainIcon.width / _mainIcon.height;
 				_mainIcon.width = _mainIconSize;
 				_mainIcon.height = _mainIconSize;
-				_mainIcon.x = (w - _mainIconSize) / 2;
-				_mainIcon.y = (w - _mainIconSize) / 2;
+				_mainIcon.x = (width - _mainIconSize) / 2;
+				_mainIcon.y = (height - _mainIconSize) / 2;
 			}
 		}
 	}
