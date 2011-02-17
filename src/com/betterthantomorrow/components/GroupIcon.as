@@ -34,7 +34,7 @@ package com.betterthantomorrow.components {
 	public class GroupIcon extends BorderContainer {
 		private static const DEFAULT_MAIN_ICON_PERCENT_SIZE:Number = 45;
 		
-		private static const DEFAULT_MAX_AVATARS:Number = 9;
+		private static const DEFAULT_MAX_AVATARS:Number = 100;
 		private static const DEFAULT_SHOW_GRIDLINES:Boolean = false;
 		private static const DEFAULT_GRIDLINES_WEIGHT:Number = 2;
 		private static const DEFAULT_GRIDLINES_PERCENT_WEIGHT:Number = 0;
@@ -217,13 +217,14 @@ package com.betterthantomorrow.components {
 					_avatarSize = Math.ceil(w / numAvatars);
 					_avatarSizeBleed = _avatarSize * numAvatars - width;
 				}
-				else if (numAvatars < 9 || _maxAvatars < 9) {
-					_avatarSize = Math.ceil(w / 2);
-					_avatarSizeBleed = _avatarSize * 2 - width;
-				}
 				else {
-					_avatarSize = Math.ceil(w / 3);
-					_avatarSizeBleed = _avatarSize * 3 - width;
+					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+						if (numAvatars < Math.pow(c + 1, 2) || _maxAvatars < Math.pow(c + 1, 2)) {
+							_avatarSize = Math.ceil(w / c);
+							_avatarSizeBleed = _avatarSize * c - width;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -285,6 +286,7 @@ package com.betterthantomorrow.components {
 		}
 
 		private function placeAvatars(avatars:Dictionary, resultImage:Image):void {
+			var numAvatars:int = _avatarItems.length;
 			var _avatars:Array = new Array();
 			for each (var a:Image in avatars) {
 				_avatars.push(a);
@@ -299,20 +301,21 @@ package com.betterthantomorrow.components {
 					_avatars[0].x = _avatarSize;
 					_avatars[1].y = _avatarSize;
 				}
-				else if (_avatarItems.length < 9 || _maxAvatars < 9) {
-					for (i = 0; i < 4 && i < _avatars.length; i++) {
-						_avatars[i].x = (i % 2) * _avatarSize;
-						_avatars[i].y = Math.floor(i / 2) * _avatarSize;
-					}
-					drawGridCross(grid, _avatarSize, _avatarSize);
-				}
 				else {
-					for (i = 0; i < _maxAvatars && i < _avatars.length; i++) {
-						_avatars[i].x = (i % 3) * _avatarSize;
-						_avatars[i].y = Math.floor(i / 3) * _avatarSize;
+					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+						if (numAvatars < Math.pow(c + 1, 2) || _maxAvatars < Math.pow(c + 1, 2)) {
+							for (i = 0; i < c * c && i < _avatars.length; i++) {
+								_avatars[i].x = (i % c) * _avatarSize;
+								_avatars[i].y = Math.floor(i / c) * _avatarSize;
+							}
+							if (_showGridlines) {
+								for (var g:int = 1; g < c; g++) {
+									drawGridCross(grid, _avatarSize * g, _avatarSize * g);
+								}
+							}
+							break;
+						}
 					}
-					drawGridCross(grid, _avatarSize, _avatarSize);
-					drawGridCross(grid, _avatarSize * 2, _avatarSize * 2);
 				}
 				if (_showGridlines) {
 					resultImage.addChild(grid);
