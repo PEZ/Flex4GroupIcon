@@ -1,6 +1,8 @@
 package com.betterthantomorrow.components {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.CapsStyle;
+	import flash.display.LineScaleMode;
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;
 	import flash.display.PixelSnapping;
@@ -22,12 +24,22 @@ package com.betterthantomorrow.components {
 	
 	import spark.components.BorderContainer;
 	
-	[Style(name="mainIconPercentSize", type="Number", inherit = "yes")]
+	[Style(name="mainIconPercentSize", type="Number", inherit="yes")]
+	[Style(name="showGridlines", type="Boolean", inherit="yes")]
+	[Style(name="gridlinesWeight", type="Number", format="Length", inherit="yes")]
+	[Style(name="gridlinesPrecentWeight", type="Number", inherit="yes")]
+	[Style(name="gridlinesColor", type="Number", format="Color", inherit="yes")]
+	[Style(name="gridlinesAlpha", type="Number", inherit="yes")]
 	
 	public class GroupIcon extends BorderContainer {
 		private static const DEFAULT_MAIN_ICON_PERCENT_SIZE:Number = 45;
 		
 		private static const DEFAULT_MAX_AVATARS:Number = 9;
+		private static const DEFAULT_SHOW_GRIDLINES:Boolean = false;
+		private static const DEFAULT_GRIDLINES_WEIGHT:Number = 2;
+		private static const DEFAULT_GRIDLINES_PERCENT_WEIGHT:Number = 0;
+		private static const DEFAULT_GRIDLINES_COLOR:Number = 0x7f7f7f;
+		private static const DEFAULT_GRIDLINES_ALPHA:Number = 1.0;
 
 		public function GroupIcon() {
 			super();
@@ -39,6 +51,11 @@ package com.betterthantomorrow.components {
 				var myStyles:CSSStyleDeclaration = new CSSStyleDeclaration();
 				myStyles.defaultFactory = function():void {
 					this.mainIconPercentSize = DEFAULT_MAIN_ICON_PERCENT_SIZE;
+					this.showGridlines = DEFAULT_SHOW_GRIDLINES;
+					this.gridlinesWeight = DEFAULT_GRIDLINES_WEIGHT;
+					this.gridlinesPrecentWeight = DEFAULT_GRIDLINES_PERCENT_WEIGHT;
+					this.gridlinesColor = DEFAULT_GRIDLINES_COLOR;
+					this.gridlinesAlpha = DEFAULT_GRIDLINES_ALPHA;
 				}
 				FlexGlobals.topLevelApplication.styleManager.setStyleDeclaration("com.betterthantomorrow.components.GroupIcon", myStyles, true);
 			}
@@ -49,6 +66,7 @@ package com.betterthantomorrow.components {
 		private var _mainIcon:Image;
 		[Bindable] private var _avatarItems:ArrayCollection;
 		private var _avatarSize:Number;
+		private var _maxAvatars:uint = DEFAULT_MAX_AVATARS;
 		private var _avatarSizeBleed:Number;
 		private var _mainIconSize:Number;
 		private var _oldWidth:Number;
@@ -90,6 +108,13 @@ package com.betterthantomorrow.components {
 			}
 		}
 		
+		public function set maxAvatars(v:uint):void {
+			if (v != _maxAvatars) {
+				_maxAvatars = v;
+				invalidateDisplayList();
+			}
+		}
+
 		private function createResultImage():Image {
 			var resultImage:Image = new Image();
 			resultImage.width = width;
@@ -115,6 +140,31 @@ package com.betterthantomorrow.components {
 			return !isNaN(getStyle("cornerRadius")) ? getStyle("cornerRadius") : 0;
 		}
 
+		private function get _showGridlines():Boolean {
+			return getStyle("showGridlines");
+		}
+		
+		private function get _gridlinesPercentWeight():Number {
+			return _showGridlines && !isNaN(getStyle("gridlinesPercentWeight")) ? getStyle("gridlinePercentsWeight") : DEFAULT_GRIDLINES_PERCENT_WEIGHT;
+		}
+
+		private function get _gridlinesWeight():Number {
+			if (_gridlinesPercentWeight > 0) {
+				return _gridlinesPercentWeight * width;
+			}
+			else {
+				return _showGridlines && !isNaN(getStyle("gridlinesWeight")) ? getStyle("gridlinesWeight") : DEFAULT_GRIDLINES_WEIGHT;
+			}
+		}
+		
+		private function get _gridlinesColor():Number {
+			return _showGridlines && !isNaN(getStyle("gridlinesColor")) ? getStyle("gridlinesColor") : DEFAULT_GRIDLINES_COLOR;
+		}
+		
+		private function get _gridlinesAlpha():Number {
+			return _showGridlines && !isNaN(getStyle("gridlinesAlpha")) ? getStyle("gridlinesAlpha") : DEFAULT_GRIDLINES_ALPHA;
+		}
+		
 		private function createMask():UIComponent {
 			var maskShape:UIComponent = new UIComponent();
 			maskShape.graphics.beginFill(0xff0000);
@@ -136,7 +186,7 @@ package com.betterthantomorrow.components {
 					function oc(e:Event):void {
 						loader.removeEventListener(Event.COMPLETE, oc);
 						var li:LoaderInfo = e.currentTarget as LoaderInfo;
-						if (!(li.url in avatars) && numAvatars++ < DEFAULT_MAX_AVATARS) {
+						if (!(li.url in avatars) && numAvatars++ < _maxAvatars) {
 							var avatar:Bitmap = li.content as Bitmap;
 							avatar.smoothing = true;
 							var cropping:Point = squareCropCoords(avatar, _avatarSize);
@@ -167,7 +217,7 @@ package com.betterthantomorrow.components {
 					_avatarSize = Math.ceil(w / numAvatars);
 					_avatarSizeBleed = _avatarSize * numAvatars - width;
 				}
-				else if (numAvatars < 9) {
+				else if (numAvatars < 9 || _maxAvatars < 9) {
 					_avatarSize = Math.ceil(w / 2);
 					_avatarSizeBleed = _avatarSize * 2 - width;
 				}
@@ -217,7 +267,7 @@ package com.betterthantomorrow.components {
 			for each (var avatar:Image in avatars) {
 				resultImage.addChild(avatar);
 			}
-			placeAvatars(avatars);
+			placeAvatars(avatars, resultImage);
 		}
 
 		private function addMainIcon(resultImage:Image):void {
@@ -227,36 +277,45 @@ package com.betterthantomorrow.components {
 			placeMainIcon();
 		}
 		
-		private function placeAvatars(avatars:Dictionary):void {
+		private function drawGridCross(grid:Image, _x:Number, _y:Number):void {
+			grid.graphics.moveTo(_x, 0);
+			grid.graphics.lineTo(_x, grid.height);
+			grid.graphics.moveTo(0, _y);
+			grid.graphics.lineTo(grid.width, _y);			
+		}
+
+		private function placeAvatars(avatars:Dictionary, resultImage:Image):void {
 			var _avatars:Array = new Array();
 			for each (var a:Image in avatars) {
 				_avatars.push(a);
 			}
-			if (_avatars != null && _avatars.length > 0) {
+			if (_avatars != null && _avatars.length > 1) {
+				var grid:Image = new Image();
+				grid.width = resultImage.width;
+				grid.height = resultImage.height;
+				grid.graphics.lineStyle(_gridlinesWeight, _gridlinesColor, _gridlinesAlpha, false, LineScaleMode.NORMAL, CapsStyle.NONE);
 				var i:int;
-				if (_avatarItems.length == 1 && _avatars.length > 1) {
-					_avatars[0].x = (width - _avatars[0].width) / 2;
-					_avatars[0].y = (height - _avatars[0].height) / 2;
-				}
-				else if (_avatarItems.length == 2 && _avatars.length > 1) {
+				if (_avatarItems.length == 2 && _avatars.length > 1) {
 					_avatars[0].x = _avatarSize;
 					_avatars[1].y = _avatarSize;
 				}
-				else if (_avatarItems.length == 2 && _avatars.length > 2) {
-					_avatars[1].x = _avatarSize;
-					_avatars[2].x = _avatars[2].y = _avatarSize;
-				}
-				else if (_avatarItems.length < 9) {
+				else if (_avatarItems.length < 9 || _maxAvatars < 9) {
 					for (i = 0; i < 4 && i < _avatars.length; i++) {
 						_avatars[i].x = (i % 2) * _avatarSize;
 						_avatars[i].y = Math.floor(i / 2) * _avatarSize;
 					}
+					drawGridCross(grid, _avatarSize, _avatarSize);
 				}
 				else {
-					for (i = 0; i < DEFAULT_MAX_AVATARS && i < _avatars.length; i++) {
+					for (i = 0; i < _maxAvatars && i < _avatars.length; i++) {
 						_avatars[i].x = (i % 3) * _avatarSize;
 						_avatars[i].y = Math.floor(i / 3) * _avatarSize;
 					}
+					drawGridCross(grid, _avatarSize, _avatarSize);
+					drawGridCross(grid, _avatarSize * 2, _avatarSize * 2);
+				}
+				if (_showGridlines) {
+					resultImage.addChild(grid);
 				}
 			}
 		}
