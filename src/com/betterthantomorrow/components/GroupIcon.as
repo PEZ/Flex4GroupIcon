@@ -65,6 +65,11 @@ package com.betterthantomorrow.components {
 		[Bindable] private var _mainIconURL:String = new String();
 		private var _mainIcon:Image;
 		[Bindable] private var _avatarItems:ArrayCollection;
+		private var _numAvatars:uint;
+		private var _loadedAvatars:Dictionary;
+		private var _croppedAvatars:Dictionary;
+		private var _resultImage:Image;
+		private var _resultMask:UIComponent;
 		private var _avatarSize:Number;
 		private var _maxAvatars:uint = DEFAULT_MAX_AVATARS;
 		private var _avatarSizeBleed:Number;
@@ -74,6 +79,7 @@ package com.betterthantomorrow.components {
 		public function set mainIconURL(v:String):void {
 			if (_mainIconURL != v) {
 				_mainIconURL = v;
+				prepareFullRedraw();
 				var loader:Loader = new Loader();
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 					function oc(e:Event):void {
@@ -84,13 +90,29 @@ package com.betterthantomorrow.components {
 						_mainIcon.source = li.content;
 						_mainIcon.width = li.content.width;
 						_mainIcon.height = li.content.height;
-						updateSizes(0);
-						var resultImage:Image = createResultImage();
-						addMainIcon(resultImage);
-						removeAllElements();
-						addElement(resultImage);
+						fullRedraw();
 					});
 				loader.load(new URLRequest(_mainIconURL));
+			}
+		}
+
+		private function loadAvatars():void {
+			_loadedAvatars = new Dictionary();
+			prepareFullRedraw();
+			var numAvatars:Number = 0;
+			for each (var avatarItem:IGroupIconItem in _avatarItems) {
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+					function oc(e:Event):void {
+						loader.removeEventListener(Event.COMPLETE, oc);
+						var li:LoaderInfo = e.currentTarget as LoaderInfo;
+						if (!(li.url in _loadedAvatars) && numAvatars++ < _maxAvatars) {
+							_loadedAvatars[li.url] = li.content as Bitmap;
+							_loadedAvatars[li.url].smoothing = true;
+							fullRedraw();
+						}
+					});
+				loader.load(new URLRequest(avatarItem.avatarURL));
 			}
 		}
 
@@ -108,9 +130,36 @@ package com.betterthantomorrow.components {
 			}
 		}
 		
+		private function prepareFullRedraw():void {
+			updateNumAvatars();
+			measure();
+			_croppedAvatars = new Dictionary();
+			_resultImage = createResultImage();
+			_resultMask = createMask();
+			_resultImage.mask = _resultMask;
+		}
+
+		private function fullRedraw():void {
+			for (var url:String in _loadedAvatars) {
+				if (!(url in _croppedAvatars)) {
+					var cropping:Point = squareCropCoords(_loadedAvatars[url], _avatarSize);
+					var avatarImage:Image = new Image();
+					avatarImage.addChild(crop(cropping.x, cropping.y, _avatarSize, _avatarSize, _loadedAvatars[url]));
+					_croppedAvatars[url] = avatarImage;	
+					_resultImage.addChild(avatarImage);
+				}
+			}
+			placeAvatars(_croppedAvatars, _resultImage);
+			addMainIcon(_resultImage);
+			removeAllElements();
+			addElement(_resultImage);
+			addElement(_resultMask);
+		}
+
 		public function set maxAvatars(v:uint):void {
 			if (v != _maxAvatars) {
 				_maxAvatars = v;
+				prepareFullRedraw();
 				invalidateDisplayList();
 			}
 		}
@@ -124,11 +173,42 @@ package com.betterthantomorrow.components {
 			return resultImage;
 		}
 		
+		private function updateNumAvatars():void {
+			_numAvatars = 0;
+			for each (var item:Object in _avatarItems) {
+				_numAvatars++;
+			}
+		}
+
+		override protected function measure():void {
+			var w:Number = width;
+			if (_mainIcon != null) {
+				_mainIconSize = w * getStyle("mainIconPercentSize") / 100;
+			}
+			if (_numAvatars > 0) {
+				if (_avatarItems.length < 3) {
+					_avatarSize = Math.ceil(w / _numAvatars);
+					_avatarSizeBleed = _avatarSize * _numAvatars - width;
+				}
+				else {
+					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+						if (_numAvatars < Math.pow(c + 1, 2) || _maxAvatars < Math.pow(c + 1, 2)) {
+							_avatarSize = Math.ceil(w / c);
+							_avatarSizeBleed = _avatarSize * c - width;
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		override public function set width(v:Number):void {
 			if (v != _oldWidth) {
 				_oldWidth = width;
 				super.width = v;
 				super.height = v;
+				prepareFullRedraw();
+				invalidateDisplayList();
 			}
 		}
 		
@@ -176,59 +256,6 @@ package com.betterthantomorrow.components {
 			return maskShape;
 		}
 
-		private function loadAvatars():void {
-			updateSizes(_avatarItems.length);
-			var avatars:Dictionary = new Dictionary();
-			var numAvatars:Number = 0;
-			for each (var avatarItem:IGroupIconItem in _avatarItems) {
-				var loader:Loader = new Loader();
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
-					function oc(e:Event):void {
-						loader.removeEventListener(Event.COMPLETE, oc);
-						var li:LoaderInfo = e.currentTarget as LoaderInfo;
-						if (!(li.url in avatars) && numAvatars++ < _maxAvatars) {
-							var avatar:Bitmap = li.content as Bitmap;
-							avatar.smoothing = true;
-							var cropping:Point = squareCropCoords(avatar, _avatarSize);
-							var avatarImage:Image = new Image();
-							avatarImage.addChild(crop(cropping.x, cropping.y, _avatarSize, _avatarSize, avatar));
-							avatars[li.url] = avatarImage;
-							var resultImage:Image = createResultImage();
-							addAvatars(avatars, resultImage);
-							addMainIcon(resultImage);
-							removeAllElements();
-							addElement(resultImage);
-							var resultMask:UIComponent = createMask();
-							addElement(resultMask);
-							resultImage.mask = resultMask;
-						}
-					});
-				loader.load(new URLRequest(avatarItem.avatarURL));
-			}
-		}
-		
-		private function updateSizes(numAvatars:int):void {
-			var w:Number = width;
-			if (_mainIcon != null) {
-				_mainIconSize = w * getStyle("mainIconPercentSize") / 100;
-			}
-			if (numAvatars > 0) {
-				if (_avatarItems.length < 3) {
-					_avatarSize = Math.ceil(w / numAvatars);
-					_avatarSizeBleed = _avatarSize * numAvatars - width;
-				}
-				else {
-					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
-						if (numAvatars < Math.pow(c + 1, 2) || _maxAvatars < Math.pow(c + 1, 2)) {
-							_avatarSize = Math.ceil(w / c);
-							_avatarSizeBleed = _avatarSize * c - width;
-							break;
-						}
-					}
-				}
-			}
-		}
-
 		private function crop(_x:Number, _y:Number, _width:Number, _height:Number, bm:Bitmap):Bitmap {
 			var cropArea:Rectangle = new Rectangle(0, 0, _width, _height);
 			var croppedBitmap:Bitmap = new Bitmap(new BitmapData( _width, _height ), PixelSnapping.ALWAYS, true);
@@ -262,13 +289,6 @@ package com.betterthantomorrow.components {
 				yScale = ratio * size / bm.height; 
 			}
 			return new Point(xScale, yScale);
-		}
-
-		private function addAvatars(avatars:Dictionary, resultImage:Image):void {
-			for each (var avatar:Image in avatars) {
-				resultImage.addChild(avatar);
-			}
-			placeAvatars(avatars, resultImage);
 		}
 
 		private function addMainIcon(resultImage:Image):void {
@@ -325,7 +345,6 @@ package com.betterthantomorrow.components {
 		
 		private function placeMainIcon():void {
 			if (_mainIcon != null) {
-				//var ratio = _mainIcon.width / _mainIcon.height;
 				_mainIcon.width = _mainIconSize;
 				_mainIcon.height = _mainIconSize;
 				_mainIcon.x = (width - _mainIconSize) / 2;
