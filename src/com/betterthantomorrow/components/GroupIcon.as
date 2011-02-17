@@ -234,19 +234,19 @@ package com.betterthantomorrow.components {
 			}
 			if (_avatars != null && _avatars.length > 0) {
 				var i:int;
-				if (_avatars.length == 1) {
+				if (_avatarItems.length == 1 && _avatars.length > 1) {
 					_avatars[0].x = (width - _avatars[0].width) / 2;
 					_avatars[0].y = (height - _avatars[0].height) / 2;
 				}
-				if (_avatars.length == 2) {
+				else if (_avatarItems.length == 2 && _avatars.length > 1) {
 					_avatars[0].x = _avatarSize;
 					_avatars[1].y = _avatarSize;
 				}
-				else if (_avatars.length == 3) {
+				else if (_avatarItems.length == 2 && _avatars.length > 2) {
 					_avatars[1].x = _avatarSize;
 					_avatars[2].x = _avatars[2].y = _avatarSize;
 				}
-				else if (_avatars.length < 9) {
+				else if (_avatarItems.length < 9) {
 					for (i = 0; i < 4 && i < _avatars.length; i++) {
 						_avatars[i].x = (i % 2) * _avatarSize;
 						_avatars[i].y = Math.floor(i / 2) * _avatarSize;
