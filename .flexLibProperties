@@ -3,6 +3,7 @@
   <includeClasses>
     <classEntry path="com.betterthantomorrow.components.GroupIcon"/>
     <classEntry path="com.betterthantomorrow.components.IGroupIconItem"/>
+    <classEntry path="com.betterthantomorrow.utils.AvatarUtils"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>
