@@ -65,7 +65,7 @@ package com.betterthantomorrow.components {
 		[Bindable] private var _mainIconURL:String = new String();
 		private var _mainIcon:Image;
 		[Bindable] private var _avatarItems:ArrayCollection;
-		private var _loadedAvatars:Dictionary = new Dictionary();
+		private static var _loadedAvatars:Dictionary = new Dictionary();
 		private var _croppedAvatars:Dictionary;
 		private var _resultImage:Image;
 		private var _resultMask:UIComponent;
@@ -96,27 +96,29 @@ package com.betterthantomorrow.components {
 		}
 
 		private function loadAvatar(avatarItem:IGroupIconItem):void {
-			if (!(avatarItem.avatarURL in _loadedAvatars)) {
-				var loader:Loader = new Loader();
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
-					function oc(e:Event):void {
-						loader.removeEventListener(Event.COMPLETE, oc);
-						var li:LoaderInfo = e.currentTarget as LoaderInfo;
-						if (!(avatarItem.avatarURL in _loadedAvatars)) {
-							_loadedAvatars[avatarItem.avatarURL] = li.content as Bitmap;
-							_loadedAvatars[avatarItem.avatarURL].smoothing = true;
-							fullRedraw();
-						}
-					});
-				loader.load(new URLRequest(avatarItem.avatarURL));
-			}
+			var loader:Loader = new Loader();
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+				function oc(e:Event):void {
+					loader.removeEventListener(Event.COMPLETE, oc);
+					var li:LoaderInfo = e.currentTarget as LoaderInfo;
+					if (!(avatarItem.avatarURL in _loadedAvatars)) {
+						_loadedAvatars[avatarItem.avatarURL] = li.content as Bitmap;
+						_loadedAvatars[avatarItem.avatarURL].smoothing = true;
+					}
+					fullRedraw();
+				});
+			loader.load(new URLRequest(avatarItem.avatarURL));
 		}
 
 		private function loadAvatars():void {
 			prepareFullRedraw();
 			for each (var avatarItem:IGroupIconItem in _avatarItems) {
-				loadAvatar(avatarItem);
-				fullRedraw();			
+				if (!(avatarItem.avatarURL in _loadedAvatars)) {
+					loadAvatar(avatarItem);
+				}
+				else {
+					fullRedraw();
+				}
 			}
 		}
 
