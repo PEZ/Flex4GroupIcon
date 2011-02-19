@@ -22,6 +22,7 @@ package com.betterthantomorrow.components {
 	import mx.core.UIComponent;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
+	import mx.graphics.ImageSnapshot;
 	import mx.styles.CSSStyleDeclaration;
 	
 	import spark.components.BorderContainer;
@@ -29,12 +30,19 @@ package com.betterthantomorrow.components {
 	[Style(name="mainIconPercentSize", type="Number", inherit="yes")]
 	[Style(name="showGridlines", type="Boolean", inherit="yes")]
 	[Style(name="gridlinesWeight", type="Number", format="Length", inherit="yes")]
-	[Style(name="gridlinesPrecentWeight", type="Number", inherit="yes")]
+	[Style(name="gridlinesPercentWeight", type="Number", inherit="yes")]
 	[Style(name="gridlinesColor", type="Number", format="Color", inherit="yes")]
 	[Style(name="gridlinesAlpha", type="Number", inherit="yes")]
+	[Style(name="showMainIconBorder", type="Boolean", inherit="yes")]
+	[Style(name="mainIconBorderWeight", type="Number", format="Length", inherit="yes")]
+	[Style(name="mainIconBorderPrecentWeight", type="Number", inherit="yes")]
+	[Style(name="mainIconBorderColor", type="Number", format="Color", inherit="yes")]
+	[Style(name="mainIconBorderAlpha", type="Number", inherit="yes")]
+	[Style(name="mainIconBackgroundColor", type="Number", format="Color", inherit="yes")]
+	[Style(name="mainIconBackgroundAlpha", type="Number", inherit="yes")]
 	
 	public class GroupIcon extends BorderContainer {
-		private static const DEFAULT_MAIN_ICON_PERCENT_SIZE:Number = 45;
+		private static const DEFAULT_MAIN_ICON_PERCENT_SIZE:Number = 40;
 		
 		private static const DEFAULT_MAX_AVATARS:Number = 100;
 		private static const DEFAULT_SHOW_GRIDLINES:Boolean = false;
@@ -42,6 +50,13 @@ package com.betterthantomorrow.components {
 		private static const DEFAULT_GRIDLINES_PERCENT_WEIGHT:Number = 0;
 		private static const DEFAULT_GRIDLINES_COLOR:Number = 0x7f7f7f;
 		private static const DEFAULT_GRIDLINES_ALPHA:Number = 1.0;
+		private static const DEFAULT_SHOW_MAIN_ICON_BORDER:Boolean = false;
+		private static const DEFAULT_MAIN_ICON_BORDER_WEIGHT:Number = 2;
+		private static const DEFAULT_MAIN_ICON_BORDER_PERCENT_WEIGHT:Number = 0;
+		private static const DEFAULT_MAIN_ICON_BORDER_COLOR:Number = 0x7f7f7f;
+		private static const DEFAULT_MAIN_ICON_BORDER_ALPHA:Number = 1.0;
+		private static const DEFAULT_MAIN_ICON_BACKGROUND_COLOR:Number = 0xffffff;
+		private static const DEFAULT_MAIN_ICON_BACKGROUND_ALPHA:Number = 1.0;
 
 		public function GroupIcon() {
 			super();
@@ -55,9 +70,16 @@ package com.betterthantomorrow.components {
 					this.mainIconPercentSize = DEFAULT_MAIN_ICON_PERCENT_SIZE;
 					this.showGridlines = DEFAULT_SHOW_GRIDLINES;
 					this.gridlinesWeight = DEFAULT_GRIDLINES_WEIGHT;
-					this.gridlinesPrecentWeight = DEFAULT_GRIDLINES_PERCENT_WEIGHT;
+					this.gridlinesPercentWeight = DEFAULT_GRIDLINES_PERCENT_WEIGHT;
 					this.gridlinesColor = DEFAULT_GRIDLINES_COLOR;
 					this.gridlinesAlpha = DEFAULT_GRIDLINES_ALPHA;
+					this.showMainIconBorder = DEFAULT_SHOW_MAIN_ICON_BORDER;
+					this.mainIconBorderWeight = DEFAULT_MAIN_ICON_BORDER_WEIGHT;
+					this.mainIconBorderPercentWeight = DEFAULT_MAIN_ICON_BORDER_PERCENT_WEIGHT;
+					this.mainIconBorderColor = DEFAULT_MAIN_ICON_BORDER_COLOR;
+					this.mainIconBorderAlpha = DEFAULT_MAIN_ICON_BORDER_ALPHA;
+					this.mainIconBackgroundColor = DEFAULT_MAIN_ICON_BACKGROUND_COLOR;
+					this.mainIconBackgroundAlpha = DEFAULT_MAIN_ICON_BACKGROUND_ALPHA;
 				}
 				FlexGlobals.topLevelApplication.styleManager.setStyleDeclaration("com.betterthantomorrow.components.GroupIcon", myStyles, true);
 			}
@@ -75,6 +97,7 @@ package com.betterthantomorrow.components {
 		private var _maxAvatars:uint = DEFAULT_MAX_AVATARS;
 		private var _avatarSizeBleed:Number;
 		private var _mainIconSize:Number;
+		private var _mainIconComponent:UIComponent;
 		private var _oldWidth:Number;
 		
 		public function set mainIconURL(v:String):void {
@@ -140,6 +163,7 @@ package com.betterthantomorrow.components {
 		
 		private function prepareFullRedraw():void {
 			measure();
+			_mainIconComponent = new UIComponent();
 			_croppedAvatars = new Dictionary();
 			_resultImage = createResultImage();
 			_resultMask = createMask();
@@ -147,13 +171,13 @@ package com.betterthantomorrow.components {
 		}
 
 		private function fullRedraw():void {
+			measure();
 			var numLoaded:int = 0;
 			for each (var item:IGroupIconItem in _avatarItems) {
 				if (item.avatarURL in _loadedAvatars) {
 					numLoaded++;
 					if (!(item.avatarURL in _croppedAvatars)) {
 						var avatarImage:Image = new Image();
-						//avatarImage.addChild(crop(cropping.x, cropping.y, _avatarSize, _avatarSize, _loadedAvatars[item.avatarURL]));
 						avatarImage.addChild(AvatarUtils.squareCrop(_loadedAvatars[item.avatarURL], _avatarSize));
 						_croppedAvatars[item.avatarURL] = avatarImage;	
 						_resultImage.addChild(avatarImage);
@@ -185,7 +209,18 @@ package com.betterthantomorrow.components {
 			resultImage.y = -_borderWeight - _avatarSizeBleed / 2;
 			return resultImage;
 		}
-		
+
+		private function createMask():UIComponent {
+			var maskShape:UIComponent = new UIComponent();
+			maskShape.graphics.beginFill(0xff0000);
+			maskShape.graphics.drawRoundRect(-0.5, -0.5,
+				width - _borderWeight * 2 + 1, height - _borderWeight * 2 + 1,
+				_cornerRadius * 2);
+			maskShape.graphics.endFill();
+			maskShape.visible = false;
+			return maskShape;
+		}
+
 		override protected function measure():void {
 			var w:Number = width;
 			if (_mainIcon != null) {
@@ -219,11 +254,13 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function get _borderWeight():Number {
-			return getStyle("borderVisible") && !isNaN(getStyle("borderWeight")) ? getStyle("borderWeight") : 0;
+			return getStyle("borderVisible") && !isNaN(getStyle("borderWeight")) ?
+				getStyle("borderWeight") : 0;
 		}
 
 		private function get _cornerRadius():Number {
-			return !isNaN(getStyle("cornerRadius")) ? getStyle("cornerRadius") : 0;
+			return !isNaN(getStyle("cornerRadius")) ?
+				getStyle("cornerRadius") : 0;
 		}
 
 		private function get _showGridlines():Boolean {
@@ -231,46 +268,98 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function get _gridlinesPercentWeight():Number {
-			return _showGridlines && !isNaN(getStyle("gridlinesPercentWeight")) ? getStyle("gridlinePercentsWeight") : DEFAULT_GRIDLINES_PERCENT_WEIGHT;
+			return _showGridlines && !isNaN(getStyle("gridlinesPercentWeight")) ?
+				getStyle("gridlinesPercentWeight") : DEFAULT_GRIDLINES_PERCENT_WEIGHT;
 		}
 
 		private function get _gridlinesWeight():Number {
 			if (_gridlinesPercentWeight > 0) {
-				return _gridlinesPercentWeight * width;
+				return _gridlinesPercentWeight * width / 100;
 			}
 			else {
-				return _showGridlines && !isNaN(getStyle("gridlinesWeight")) ? getStyle("gridlinesWeight") : DEFAULT_GRIDLINES_WEIGHT;
+				return _showGridlines && !isNaN(getStyle("gridlinesWeight")) ?
+					getStyle("gridlinesWeight") : DEFAULT_GRIDLINES_WEIGHT;
 			}
 		}
 		
 		private function get _gridlinesColor():Number {
-			return _showGridlines && !isNaN(getStyle("gridlinesColor")) ? getStyle("gridlinesColor") : DEFAULT_GRIDLINES_COLOR;
+			return _showGridlines && !isNaN(getStyle("gridlinesColor")) ?
+				getStyle("gridlinesColor") : DEFAULT_GRIDLINES_COLOR;
 		}
 		
 		private function get _gridlinesAlpha():Number {
-			return _showGridlines && !isNaN(getStyle("gridlinesAlpha")) ? getStyle("gridlinesAlpha") : DEFAULT_GRIDLINES_ALPHA;
+			return _showGridlines && !isNaN(getStyle("gridlinesAlpha")) ?
+				getStyle("gridlinesAlpha") : DEFAULT_GRIDLINES_ALPHA;
+		}
+
+		private function get _showMainIconBorder():Boolean {
+			return getStyle("showMainIconBorder");
 		}
 		
+		private function get _mainIconBorderPercentWeight():Number {
+			return _showMainIconBorder && !isNaN(getStyle("mainIconBorderPercentWeight")) ?
+				getStyle("mainIconBorderPercentsWeight") : DEFAULT_GRIDLINES_PERCENT_WEIGHT;
+		}
+		
+		private function get _mainIconBorderWeight():Number {
+			if (_mainIconBorderPercentWeight > 0) {
+				return _mainIconBorderPercentWeight * width / 100;
+			}
+			else {
+				return _showMainIconBorder && !isNaN(getStyle("mainIconBorderWeight")) ?
+					getStyle("mainIconBorderWeight") : DEFAULT_GRIDLINES_WEIGHT;
+			}
+		}
+		
+		private function get _mainIconBorderColor():Number {
+			return _showMainIconBorder && !isNaN(getStyle("mainIconBorderColor")) ?
+				getStyle("mainIconBorderColor") : DEFAULT_MAIN_ICON_BORDER_COLOR;
+		}
+		
+		private function get _mainIconBorderAlpha():Number {
+			return _showMainIconBorder && !isNaN(getStyle("mainIconBorderAlpha")) ?
+				getStyle("mainIconBorderAlpha") : DEFAULT_MAIN_ICON_BORDER_ALPHA;
+		}
+		
+		private function get _mainIconBackgroundColor():Number {
+			return !isNaN(getStyle("mainIconBackgroundColor")) ?
+				getStyle("mainIconBackgroundColor") : DEFAULT_MAIN_ICON_BACKGROUND_COLOR;
+		}
+		
+		private function get _mainIconBackgroundAlpha():Number {
+			return !isNaN(getStyle("mainIconBackgroundAlpha")) ?
+				getStyle("mainIconBackgroundAlpha") : DEFAULT_MAIN_ICON_BACKGROUND_ALPHA;
+		}
+
 		private function get _numAvatars():uint {
 			return _avatarItems != null ? _avatarItems.length : 0;
 		}
 
-		private function createMask():UIComponent {
-			var maskShape:UIComponent = new UIComponent();
-			maskShape.graphics.beginFill(0xff0000);
-			maskShape.graphics.drawRoundRect(-0.5, -0.5,
-				width - _borderWeight * 2 + 1, height - _borderWeight * 2 + 1,
-				_cornerRadius * 2);
-			maskShape.graphics.endFill();
-			maskShape.visible = false;
-			return maskShape;
-		}
-
 		private function addMainIcon(resultImage:Image):void {
 			if (_mainIcon != null) {
-				resultImage.addChild(_mainIcon);
+				if (resultImage.contains(_mainIconComponent)) {
+					resultImage.removeChild(_mainIconComponent);
+					resultImage.addChild(_mainIconComponent);
+				}
+				else {
+					_mainIconComponent = new UIComponent();
+					_mainIconComponent.width = _mainIconComponent.height = _mainIconSize;
+					_mainIconComponent.x = _mainIconComponent.y = (width - _mainIconSize) / 2;
+					if (_showMainIconBorder) {
+						_mainIconComponent.graphics.lineStyle(_mainIconBorderWeight, _mainIconBorderColor, _mainIconBorderAlpha);
+					}
+					_mainIconComponent.graphics.beginFill(_mainIconBackgroundColor, _mainIconBackgroundAlpha);
+					_mainIconComponent.graphics.drawCircle(_mainIconSize / 2, _mainIconSize / 2, _mainIconSize / 2);
+					_mainIconComponent.graphics.endFill();
+					var ratio:Number = _mainIconComponent.width / _mainIconComponent.height;
+					_mainIcon.width = Math.sqrt(_mainIconSize * _mainIconSize / 2) - _mainIconBorderWeight * 2;
+					_mainIcon.height = _mainIcon.width / ratio;
+					_mainIconComponent.addChild(_mainIcon);
+					_mainIcon.x = (_mainIconSize - _mainIcon.width) / 2;
+					_mainIcon.y = (_mainIconSize - _mainIcon.height) / 2;
+					resultImage.addChild(_mainIconComponent);
+				}
 			}
-			placeMainIcon();
 		}
 		
 		private function drawGridCross(grid:Image, _x:Number, _y:Number):void {
@@ -317,15 +406,6 @@ package com.betterthantomorrow.components {
 				if (_showGridlines) {
 					_resultImage.addChild(grid);
 				}
-			}
-		}
-		
-		private function placeMainIcon():void {
-			if (_mainIcon != null) {
-				_mainIcon.width = _mainIconSize;
-				_mainIcon.height = _mainIconSize;
-				_mainIcon.x = (width - _mainIconSize) / 2;
-				_mainIcon.y = (height - _mainIconSize) / 2;
 			}
 		}
 	}
