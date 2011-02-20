@@ -42,15 +42,17 @@ package com.betterthantomorrow.components {
 	[Style(name="mainIconBackgroundAlpha", type="Number", inherit="yes")]
 	
 	public class GroupIcon extends BorderContainer {
-		private static const DEFAULT_MAIN_ICON_PERCENT_SIZE:Number = 40;
 		
 		private static const DEFAULT_MAX_AVATARS:Number = 100;
+
 		private static const DEFAULT_SHOW_GRIDLINES:Boolean = false;
 		private static const DEFAULT_GRIDLINES_WEIGHT:Number = 2;
 		private static const DEFAULT_GRIDLINES_PERCENT_WEIGHT:Number = 0;
 		private static const DEFAULT_GRIDLINES_COLOR:Number = 0x7f7f7f;
 		private static const DEFAULT_GRIDLINES_ALPHA:Number = 1.0;
+
 		private static const DEFAULT_SHOW_MAIN_ICON_BORDER:Boolean = false;
+		private static const DEFAULT_MAIN_ICON_PERCENT_SIZE:Number = 40;
 		private static const DEFAULT_MAIN_ICON_BORDER_WEIGHT:Number = 2;
 		private static const DEFAULT_MAIN_ICON_BORDER_PERCENT_WEIGHT:Number = 0;
 		private static const DEFAULT_MAIN_ICON_BORDER_COLOR:Number = 0x7f7f7f;
