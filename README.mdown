@@ -2,7 +2,7 @@
 
 I needed a component that would represent a group of people. That's what this little project is about.
 
-Basically you create an instance of GroupIcon and set it's `avatars` attribute point to a collection of objects implenting the IGroupIconItem interface.
+Basically you create an instance of GroupIcon and set its `avatars` attribute point to a collection of objects implenting the IGroupIconItem interface.
 The interface is super small, just
 
 `		function get avatarURL():String;'`
