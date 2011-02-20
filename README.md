@@ -66,7 +66,7 @@ It should get imported as a Flex Library project. Then you have at least two opt
 1. Add the gauge library project to the Build Path of the project where you need the GroupIcon component.
 2. Build the library project and copy the resulting swc-file out of the bin/ folder and put it in the libs/ folder of your gauge-needing project.
 
-Option 1 is to prefer I'd say, because then you can much easier follow what's going on in the debugger, fix bugs in the gauge and such.
+Option 1 is to prefer I'd say, because then you can much easier follow what's going on in the debugger, fix bugs and such.
 Option 2 assumes you have a standard setup project with a library folder called libs/ setup in your projects Build Path.
 
 ###Keep your fork in sync
@@ -74,10 +74,10 @@ If you fork this repository and still want to keep your fork in sync with any bu
 myself or pull in from pull requests from others; This is the easiest way I have found:
 
 1. Add this repository as a remote upstream to the clone of your fork: <br>
- `git remote add upstream https://PEZ@github.com/PEZ/Flex4GroupIcon.git`
+ `$ git remote add upstream https://PEZ@github.com/PEZ/Flex4GroupIcon.git`
 2. Then fetch from upstream:<br>
- `git fetch upstream`
+ `$ git fetch upstream`
 3. Whenever you want to merge in any changes in the main repo:<br>
- `git merge upstream/master`
+ `$ git merge upstream/master`
 
 That last step is assuming you want to merge the master branch of course, but that's the only branch there is yet anyway. =)
