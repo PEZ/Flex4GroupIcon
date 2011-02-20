@@ -22,6 +22,7 @@ borderVisible="true" backgroundColor="#1C1C1C" backgroundAlpha="1.0" borderWeigh
 
 ##Styling
 The GroupIcon can have grid lines. The following CSS styles control them:
+
 * `showGridlines`, Boolean, default: false
 * `gridlinesWeight`, Length, default: 2
 * `gridlinesPercentWeight`, Number 0-100, default: 0
@@ -29,6 +30,7 @@ The GroupIcon can have grid lines. The following CSS styles control them:
 * `gridlinesAlpha`, Number 0-1, default: 1
 
 The optional "main icon" can also be styled:
+
 * `mainIconPercentSize`, Number 0-100, default: 40
 * `showMainIconBorder`, Boolean, default: false
 * `mainIconBorderWeight`, Length, default: 2
