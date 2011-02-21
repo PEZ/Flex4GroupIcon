@@ -122,7 +122,8 @@ package com.betterthantomorrow.components {
 			}
 		}
 
-		private function loadAvatar(avatarItem:IGroupIconItem):void {
+		private function loadAvatar(avatarItem:Object
+		):void {
 			var loader:Loader = new Loader();
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 				function oc(e:Event):void {
@@ -139,7 +140,7 @@ package com.betterthantomorrow.components {
 
 		private function loadAvatars():void {
 			prepareFullRedraw();
-			for each (var avatarItem:IGroupIconItem in _avatarItems) {
+			for each (var avatarItem:Object in _avatarItems) {
 				if (!(avatarItem.avatarURL in _loadedAvatars)) {
 					loadAvatar(avatarItem);
 				}
@@ -176,7 +177,7 @@ package com.betterthantomorrow.components {
 			includeInLayout = false;
 			measure();
 			var numLoaded:int = 0;
-			for each (var item:IGroupIconItem in _avatarItems) {
+			for each (var item:Object in _avatarItems) {
 				if (item.avatarURL in _loadedAvatars) {
 					numLoaded++;
 					if (!(item.avatarURL in _croppedAvatars)) {
@@ -375,7 +376,7 @@ package com.betterthantomorrow.components {
 		private function placeAvatars():void {
 			var numAvatars:int = _numAvatars;
 			var _avatars:Array = new Array();
-			for each (var item:IGroupIconItem in _avatarItems) {
+			for each (var item:Object in _avatarItems) {
 				if (item.avatarURL in _croppedAvatars) {
 					_avatars.push(_croppedAvatars[item.avatarURL]);
 				}
