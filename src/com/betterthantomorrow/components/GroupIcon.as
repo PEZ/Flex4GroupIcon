@@ -173,6 +173,7 @@ package com.betterthantomorrow.components {
 		}
 
 		private function fullRedraw():void {
+			includeInLayout = false;
 			measure();
 			var numLoaded:int = 0;
 			for each (var item:IGroupIconItem in _avatarItems) {
@@ -205,8 +206,8 @@ package com.betterthantomorrow.components {
 
 		private function createResultImage():Image {
 			var resultImage:Image = new Image();
-			resultImage.width = width;
-			resultImage.height = height;
+			resultImage.width = width + _avatarSizeBleed / 2;
+			resultImage.height = height + _avatarSizeBleed / 2;
 			resultImage.x = -_borderWeight - _avatarSizeBleed / 2;
 			resultImage.y = -_borderWeight - _avatarSizeBleed / 2;
 			return resultImage;
