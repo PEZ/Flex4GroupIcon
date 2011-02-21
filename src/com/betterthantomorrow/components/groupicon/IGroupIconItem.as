@@ -1,4 +1,4 @@
-package com.betterthantomorrow.components {
+package com.betterthantomorrow.components.groupicon {
 	import mx.controls.Image;
 
 	public interface IGroupIconItem {
