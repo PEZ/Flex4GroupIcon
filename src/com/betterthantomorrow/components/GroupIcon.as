@@ -137,13 +137,19 @@ package com.betterthantomorrow.components {
 
 		private function loadAvatars():void {
 			prepareFullRedraw();
+			var numRequestedActiveAvatars:uint = 0;
 			for each (var avatarItem:Object in _avatarItems) {
+				if (avatarItem.avatarURL in _loadedAvatars) {
+					numRequestedActiveAvatars++;
+				}
+			}
+			for each (avatarItem in _avatarItems) {
 				if (!(avatarItem.avatarURL in _loadedAvatars)) {
 					_loadedAvatars[avatarItem.avatarURL] = new Avatar(avatarItem.avatarURL);
 					if (avatarItem.isLoaded) {
 						_loadedAvatars[avatarItem.avatarURL].bitmap = avatarItem.bitmap;
 					}
-					else {
+					else if (numRequestedActiveAvatars < _maxAvatars){
 						loadAvatar(_loadedAvatars[avatarItem.avatarURL]);
 					}
 				}
@@ -154,6 +160,7 @@ package com.betterthantomorrow.components {
 							fullRedraw();
 						});
 				}
+				numRequestedActiveAvatars++;
 			}
 			fullRedraw();
 		}
