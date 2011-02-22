@@ -7,6 +7,7 @@ package com.betterthantomorrow.components.groupicon {
 		protected var _url:String;
 		private var _bitmap:Bitmap;
 		private var _isLoaded:Boolean;
+		private var _isRequested:Boolean;
 
 		public function Avatar(url:String) {
 			_url = url;
@@ -14,6 +15,14 @@ package com.betterthantomorrow.components.groupicon {
 
 		public function get url():String {
 			return _url;
+		}
+		
+		public function get isRequested():Boolean {
+			return _isRequested;
+		}
+		
+		public function set isRequested(v:Boolean):void {
+			_isRequested = v;
 		}
 		
 		public function get bitmap():Bitmap {

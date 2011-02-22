@@ -1,5 +1,6 @@
 package com.betterthantomorrow.components {
 	import com.betterthantomorrow.components.groupicon.Avatar;
+	import com.betterthantomorrow.components.groupicon.IGroupIconItem;
 	import com.betterthantomorrow.utils.AvatarUtils;
 	
 	import flash.display.Bitmap;
@@ -123,7 +124,7 @@ package com.betterthantomorrow.components {
 			}
 		}
 
-		private function loadAvatar(avatar:Avatar):void {
+		private function loadAvatar(avatar:Object):void {
 			var loader:Loader = new Loader();
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 				function oc(e:Event):void {
@@ -139,28 +140,26 @@ package com.betterthantomorrow.components {
 			prepareFullRedraw();
 			var numRequestedActiveAvatars:uint = 0;
 			for each (var avatarItem:Object in _avatarItems) {
-				if (avatarItem.avatarURL in _loadedAvatars) {
+				if (avatarItem.url in _loadedAvatars) {
 					numRequestedActiveAvatars++;
 				}
 			}
 			for each (avatarItem in _avatarItems) {
-				if (!(avatarItem.avatarURL in _loadedAvatars)) {
-					_loadedAvatars[avatarItem.avatarURL] = new Avatar(avatarItem.avatarURL);
-					if (avatarItem.isLoaded) {
-						_loadedAvatars[avatarItem.avatarURL].bitmap = avatarItem.bitmap;
-					}
-					else if (numRequestedActiveAvatars < _maxAvatars){
-						loadAvatar(_loadedAvatars[avatarItem.avatarURL]);
+				if (!(avatarItem.url in _loadedAvatars)) {
+					if (!avatarItem.isRequested && numRequestedActiveAvatars < _maxAvatars){
+						avatarItem.isRequested = true;
+						numRequestedActiveAvatars++;
+						_loadedAvatars[avatarItem.url] = avatarItem;
+						loadAvatar(avatarItem);
 					}
 				}
-				if (!_loadedAvatars[avatarItem.avatarURL].isLoaded) {
-					_loadedAvatars[avatarItem.avatarURL].addEventListener(Event.COMPLETE,
+				if (avatarItem.isRequested && !avatarItem.isLoaded) {
+					avatarItem.addEventListener(Event.COMPLETE,
 						function ec(e:Event):void {
-							_loadedAvatars[avatarItem.avatarURL].removeEventListener(Event.COMPLETE, ec);
+							avatarItem.removeEventListener(Event.COMPLETE, ec);
 							fullRedraw();
 						});
 				}
-				numRequestedActiveAvatars++;
 			}
 			fullRedraw();
 		}
@@ -193,12 +192,12 @@ package com.betterthantomorrow.components {
 			measure();
 			var numLoaded:int = 0;
 			for each (var item:Object in _avatarItems) {
-				if (item.avatarURL in _loadedAvatars && _loadedAvatars[item.avatarURL].isLoaded) {
+				if (item.url in _loadedAvatars && _loadedAvatars[item.url].isLoaded) {
 					numLoaded++;
-					if (!(item.avatarURL in _croppedAvatars)) {
+					if (!(item.url in _croppedAvatars)) {
 						var avatarImage:Image = new Image();
-						avatarImage.addChild(AvatarUtils.squareCrop(_loadedAvatars[item.avatarURL].bitmap, _avatarSize));
-						_croppedAvatars[item.avatarURL] = avatarImage;	
+						avatarImage.addChild(AvatarUtils.squareCrop(_loadedAvatars[item.url].bitmap, _avatarSize));
+						_croppedAvatars[item.url] = avatarImage;	
 						_resultImage.addChild(avatarImage);
 					}
 				}
@@ -396,8 +395,8 @@ package com.betterthantomorrow.components {
 			var numAvatars:int = _numAvatars;
 			var _avatars:Array = new Array();
 			for each (var item:Object in _avatarItems) {
-				if (item.avatarURL in _croppedAvatars) {
-					_avatars.push(_croppedAvatars[item.avatarURL]);
+				if (item.url in _croppedAvatars) {
+					_avatars.push(_croppedAvatars[item.url]);
 				}
 			}
 			if (_avatars != null && _avatars.length > 1) {
