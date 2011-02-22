@@ -130,7 +130,6 @@ package com.betterthantomorrow.components {
 					loader.removeEventListener(Event.COMPLETE, oc);
 					var li:LoaderInfo = e.currentTarget as LoaderInfo;
 					avatar.bitmap = li.content as Bitmap;
-					avatar.bitmap.smoothing = true;
 					fullRedraw();
 				});
 			loader.load(new URLRequest(avatar.url));
@@ -141,9 +140,14 @@ package com.betterthantomorrow.components {
 			for each (var avatarItem:Object in _avatarItems) {
 				if (!(avatarItem.avatarURL in _loadedAvatars)) {
 					_loadedAvatars[avatarItem.avatarURL] = new Avatar(avatarItem.avatarURL);
-					loadAvatar(_loadedAvatars[avatarItem.avatarURL]);
+					if (avatarItem.isLoaded) {
+						_loadedAvatars[avatarItem.avatarURL].bitmap = avatarItem.bitmap;
+					}
+					else {
+						loadAvatar(_loadedAvatars[avatarItem.avatarURL]);
+					}
 				}
-				else if (!_loadedAvatars[avatarItem.avatarURL].isLoaded) {
+				if (!_loadedAvatars[avatarItem.avatarURL].isLoaded) {
 					_loadedAvatars[avatarItem.avatarURL].addEventListener(Event.COMPLETE,
 						function ec(e:Event):void {
 							_loadedAvatars[avatarItem.avatarURL].removeEventListener(Event.COMPLETE, ec);

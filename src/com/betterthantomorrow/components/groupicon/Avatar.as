@@ -4,7 +4,7 @@ package com.betterthantomorrow.components.groupicon {
 	import flash.events.EventDispatcher;
 
 	public class Avatar extends EventDispatcher {
-		private var _url:String;
+		protected var _url:String;
 		private var _bitmap:Bitmap;
 		private var _isLoaded:Boolean;
 
@@ -15,13 +15,14 @@ package com.betterthantomorrow.components.groupicon {
 		public function get url():String {
 			return _url;
 		}
-
+		
 		public function get bitmap():Bitmap {
 			return _bitmap;
 		}
 
 		public function set bitmap(v:Bitmap):void {
 			_bitmap = v;
+			_bitmap.smoothing = true;
 			_isLoaded = true;
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
