@@ -5,6 +5,7 @@
     <classEntry path="com.betterthantomorrow.components.groupicon.IGroupIconItem"/>
     <classEntry path="com.betterthantomorrow.utils.AvatarUtils"/>
     <classEntry path="com.betterthantomorrow.components.groupicon.Avatar"/>
+    <classEntry path="com.betterthantomorrow.components.groupicon.RenderDoneEvent"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>
