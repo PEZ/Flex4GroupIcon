@@ -238,9 +238,9 @@ package com.betterthantomorrow.components {
 		[Bindable] private var _avatarItems:ArrayCollection;
 		private static var _loadedAvatars:Dictionary = new Dictionary();
 		private var _croppedAvatars:Dictionary;
-		private var _resultImage:Image;
-		private var _borderImage:Shape;
-		private var _resultMask:UIComponent;
+		private var _resultComponent:UIComponent;
+		private var _borderShape:Shape;
+		private var _resultMask:Shape;
 		private var _avatarSize:Number;
 		private var _maxAvatars:uint = DEFAULT_MAX_AVATARS;
 		private var _avatarSizeBleed:Number;
@@ -251,13 +251,13 @@ package com.betterthantomorrow.components {
 		override protected function createChildren():void {
 			super.createChildren();
 			_mainIconComponent = new UIComponent();
-			_resultImage = new Image();
-			_resultMask = new UIComponent();
-			_borderImage = new Shape();
-			addChild(_resultImage);
+			_resultComponent = new UIComponent();
+			_resultMask = new Shape();
+			_borderShape = new Shape();
+			addChild(_resultComponent);
 			addChild(_resultMask);
-			addChild(_borderImage);
-			_resultImage.mask = _resultMask;
+			addChild(_borderShape);
+			_resultComponent.mask = _resultMask;
 		}
 		
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
@@ -276,7 +276,7 @@ package com.betterthantomorrow.components {
 						var avatarImage:Image = new Image();
 						avatarImage.addChild(AvatarUtils.squareCrop(_loadedAvatars[item.url].bitmap, _avatarSize));
 						_croppedAvatars[item.url] = avatarImage;	
-						_resultImage.addChild(avatarImage);
+						_resultComponent.addChild(avatarImage);
 					}
 				}
 			}
@@ -285,8 +285,8 @@ package com.betterthantomorrow.components {
 			}
 			addMainIcon();
 			if (_borderVisible) {
-				_borderImage.graphics.lineStyle(_borderWeight, _borderColor, _borderAlpha);
-				_borderImage.graphics.drawRoundRect(_borderWeight / 2, _borderWeight / 2,
+				_borderShape.graphics.lineStyle(_borderWeight, _borderColor, _borderAlpha);
+				_borderShape.graphics.drawRoundRect(_borderWeight / 2, _borderWeight / 2,
 					width - _borderWeight * 2, height - _borderWeight * 2,
 					_cornerRadius * 2, _cornerRadius * 2);
 			}
@@ -367,9 +367,9 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function prepareFullRedraw():void {
-			if (_resultImage != null) {
-				for (var i:uint = _resultImage.numChildren; i > 0; i--) {
-					_resultImage.removeChildAt(i - 1);
+			if (_resultComponent != null) {
+				for (var i:uint = _resultComponent.numChildren; i > 0; i--) {
+					_resultComponent.removeChildAt(i - 1);
 				}
 			}
 			_croppedAvatars = new Dictionary();
@@ -384,13 +384,13 @@ package com.betterthantomorrow.components {
 		}
 
 		private function configureResultImage():void {
-			_resultImage.width = width + _avatarSizeBleed / 2;
-			_resultImage.height = height + _avatarSizeBleed / 2;
-			_resultImage.x = -_borderWeight - _avatarSizeBleed / 2;
-			_resultImage.y = -_borderWeight - _avatarSizeBleed / 2;
-			_resultImage.graphics.beginFill(_backgroundColor, _backgroundAlpha);
-			_resultImage.graphics.drawRect(0, 0, width, height);
-			_resultImage.graphics.endFill();
+			_resultComponent.width = width + _avatarSizeBleed / 2;
+			_resultComponent.height = height + _avatarSizeBleed / 2;
+			_resultComponent.x = -_borderWeight - _avatarSizeBleed / 2;
+			_resultComponent.y = -_borderWeight - _avatarSizeBleed / 2;
+			_resultComponent.graphics.beginFill(_backgroundColor, _backgroundAlpha);
+			_resultComponent.graphics.drawRect(0, 0, width, height);
+			_resultComponent.graphics.endFill();
 		}
 
 		private function configureResultMask():void {
@@ -436,9 +436,9 @@ package com.betterthantomorrow.components {
 
 		private function addMainIcon():void {
 			if (_mainIcon != null) {
-				if (_resultImage.contains(_mainIconComponent)) {
-					_resultImage.removeChild(_mainIconComponent);
-					_resultImage.addChild(_mainIconComponent);
+				if (_resultComponent.contains(_mainIconComponent)) {
+					_resultComponent.removeChild(_mainIconComponent);
+					_resultComponent.addChild(_mainIconComponent);
 				}
 				else {
 					_mainIconComponent = new UIComponent();
@@ -456,7 +456,7 @@ package com.betterthantomorrow.components {
 					_mainIconComponent.addChild(_mainIcon);
 					_mainIcon.x = (_mainIconSize - _mainIcon.width) / 2;
 					_mainIcon.y = (_mainIconSize - _mainIcon.height) / 2;
-					_resultImage.addChild(_mainIconComponent);
+					_resultComponent.addChild(_mainIconComponent);
 				}
 			}
 		}
@@ -477,8 +477,8 @@ package com.betterthantomorrow.components {
 			}
 			if (_avatars != null && _avatars.length > 1) {
 				var grid:Image = new Image();
-				grid.width = _resultImage.width;
-				grid.height = _resultImage.height;
+				grid.width = _resultComponent.width;
+				grid.height = _resultComponent.height;
 				grid.graphics.lineStyle(_gridlinesWeight, _gridlinesColor, _gridlinesAlpha, false, LineScaleMode.NORMAL, CapsStyle.NONE);
 				var i:int;
 				if (_numAvatars == 2 && _avatars.length > 1) {
@@ -502,7 +502,7 @@ package com.betterthantomorrow.components {
 					}
 				}
 				if (_showGridlines) {
-					_resultImage.addChild(grid);
+					_resultComponent.addChild(grid);
 				}
 			}
 		}
