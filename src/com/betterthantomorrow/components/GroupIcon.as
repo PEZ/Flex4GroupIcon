@@ -409,8 +409,8 @@ package com.betterthantomorrow.components {
 			}
 			if (_numAvatars > 0) {
 				if (_numAvatars < 3) {
-					_avatarSize = Math.ceil(w / _numAvatars);
-					_avatarSizeBleed = _avatarSize * _numAvatars - width;
+					_avatarSize = Math.ceil(w / 2);
+					_avatarSizeBleed = _avatarSize * 2 - width;
 				}
 				else {
 					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
