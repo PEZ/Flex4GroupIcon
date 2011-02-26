@@ -31,12 +31,15 @@ package com.betterthantomorrow.components {
 	
 	import spark.components.BorderContainer;
 	
-	[Style(name="mainIconPercentSize", type="Number", inherit="yes")]
+	[Style(name="borderPrecentWeight", type="Number", inherit="yes")]
+
 	[Style(name="showGridlines", type="Boolean", inherit="yes")]
 	[Style(name="gridlinesWeight", type="Number", format="Length", inherit="yes")]
 	[Style(name="gridlinesPercentWeight", type="Number", inherit="yes")]
 	[Style(name="gridlinesColor", type="Number", format="Color", inherit="yes")]
 	[Style(name="gridlinesAlpha", type="Number", inherit="yes")]
+
+	[Style(name="mainIconPercentSize", type="Number", inherit="yes")]
 	[Style(name="showMainIconBorder", type="Boolean", inherit="yes")]
 	[Style(name="mainIconBorderWeight", type="Number", format="Length", inherit="yes")]
 	[Style(name="mainIconBorderPrecentWeight", type="Number", inherit="yes")]
@@ -75,6 +78,21 @@ package com.betterthantomorrow.components {
 		private static const DEFAULT_MAIN_ICON_BACKGROUND_COLOR:Number = 0xffffff;
 		private static const DEFAULT_MAIN_ICON_BACKGROUND_ALPHA:Number = 1.0;
 
+		[Bindable] private var _mainIconURL:String = new String();
+		private var _mainIcon:Image;
+		[Bindable] private var _avatarItems:ArrayCollection;
+		private static var _loadedAvatars:Dictionary = new Dictionary();
+		private var _croppedAvatars:Dictionary;
+		private var _resultComponent:UIComponent;
+		private var _borderShape:Shape;
+		private var _resultMask:Shape;
+		private var _avatarSize:Number;
+		private var _maxAvatars:uint = DEFAULT_MAX_AVATARS;
+		private var _avatarSizeBleed:Number;
+		private var _mainIconSize:Number;
+		private var _mainIconComponent:UIComponent;
+		private var _oldWidth:Number;
+		
 		public function GroupIcon() {
 			super();
 		}
@@ -113,6 +131,22 @@ package com.betterthantomorrow.components {
 			return true;
 		}
 
+		private function _calculateBorderWeight(isVisible:Boolean, styleName:String,
+												percentValue:Number, defaultValue:Number):Number {
+			if (isVisible) {
+				if (percentValue > 0) {
+					return percentValue * width / 100;
+				}
+				else {
+					return !isNaN(getStyle(styleName)) ?
+						getStyle(styleName) : defaultValue;
+				}
+			}
+			else {
+				return 0;
+			}
+		}
+		
 		private function get _borderVisible():Boolean {
 			return getStyle("borderVisible");
 		}
@@ -123,22 +157,16 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function get _borderWeight():Number {
-			if (_borderPercentWeight > 0) {
-				return _borderPercentWeight * width / 100;
-			}
-			else {
-				return _borderVisible && !isNaN(getStyle("borderWeight")) ?
-					getStyle("borderWeight") : DEFAULT_BORDER_WEIGHT;
-			}
+			return _calculateBorderWeight(_borderVisible, "borderWeight", _borderPercentWeight, DEFAULT_BORDER_WEIGHT);
 		}
 		
 		private function get _borderColor():Number {
-			return _borderVisible && !isNaN(getStyle("borderColor")) ?
+			return !isNaN(getStyle("borderColor")) ?
 				getStyle("borderColor") : DEFAULT_BORDER_COLOR;
 		}
 		
 		private function get _borderAlpha():Number {
-			return _borderVisible && !isNaN(getStyle("borderAlpha")) ?
+			return !isNaN(getStyle("borderAlpha")) ?
 				getStyle("borderAlpha") : DEFAULT_BORDER_ALPHA;
 		}
 		
@@ -154,7 +182,7 @@ package com.betterthantomorrow.components {
 		
 		private function get _cornerRadius():Number {
 			return !isNaN(getStyle("cornerRadius")) ?
-				getStyle("cornerRadius") : 0;
+				getStyle("cornerRadius") : DEFAULT_CORNER_RADIUS;
 		}
 		
 		private function get _mainIconPercentSize():Number {
@@ -171,13 +199,7 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function get _gridlinesWeight():Number {
-			if (_gridlinesPercentWeight > 0) {
-				return _gridlinesPercentWeight * width / 100;
-			}
-			else {
-				return _showGridlines && !isNaN(getStyle("gridlinesWeight")) ?
-					getStyle("gridlinesWeight") : DEFAULT_GRIDLINES_WEIGHT;
-			}
+			return _calculateBorderWeight(_showGridlines, "gridlinesWeight", _gridlinesPercentWeight, DEFAULT_GRIDLINES_WEIGHT);
 		}
 		
 		private function get _gridlinesColor():Number {
@@ -200,13 +222,8 @@ package com.betterthantomorrow.components {
 		}
 		
 		private function get _mainIconBorderWeight():Number {
-			if (_mainIconBorderPercentWeight > 0) {
-				return _mainIconBorderPercentWeight * width / 100;
-			}
-			else {
-				return _showMainIconBorder && !isNaN(getStyle("mainIconBorderWeight")) ?
-					getStyle("mainIconBorderWeight") : DEFAULT_MAIN_ICON_BORDER_WEIGHT;
-			}
+			return _calculateBorderWeight(_showMainIconBorder, "mainIconBorderWeight",
+				_mainIconBorderPercentWeight, DEFAULT_MAIN_ICON_BORDER_WEIGHT);
 		}
 		
 		private function get _mainIconBorderColor():Number {
@@ -233,21 +250,6 @@ package com.betterthantomorrow.components {
 			return _avatarItems != null ? _avatarItems.length : 0;
 		}
 
-		[Bindable] private var _mainIconURL:String = new String();
-		private var _mainIcon:Image;
-		[Bindable] private var _avatarItems:ArrayCollection;
-		private static var _loadedAvatars:Dictionary = new Dictionary();
-		private var _croppedAvatars:Dictionary;
-		private var _resultComponent:UIComponent;
-		private var _borderShape:Shape;
-		private var _resultMask:Shape;
-		private var _avatarSize:Number;
-		private var _maxAvatars:uint = DEFAULT_MAX_AVATARS;
-		private var _avatarSizeBleed:Number;
-		private var _mainIconSize:Number;
-		private var _mainIconComponent:UIComponent;
-		private var _oldWidth:Number;
-		
 		override protected function createChildren():void {
 			super.createChildren();
 			_mainIconComponent = new UIComponent();
@@ -287,7 +289,7 @@ package com.betterthantomorrow.components {
 			if (_borderVisible) {
 				_borderShape.graphics.lineStyle(_borderWeight, _borderColor, _borderAlpha);
 				_borderShape.graphics.drawRoundRect(_borderWeight / 2, _borderWeight / 2,
-					width - _borderWeight * 2, height - _borderWeight * 2,
+					width - _borderWeight, height - _borderWeight,
 					_cornerRadius * 2, _cornerRadius * 2);
 			}
 		}
@@ -386,8 +388,8 @@ package com.betterthantomorrow.components {
 		private function configureResultImage():void {
 			_resultComponent.width = width + _avatarSizeBleed / 2;
 			_resultComponent.height = height + _avatarSizeBleed / 2;
-			_resultComponent.x = -_borderWeight - _avatarSizeBleed / 2;
-			_resultComponent.y = -_borderWeight - _avatarSizeBleed / 2;
+			_resultComponent.x = -_avatarSizeBleed / 2;
+			_resultComponent.y = -_avatarSizeBleed / 2;
 			_resultComponent.graphics.beginFill(_backgroundColor, _backgroundAlpha);
 			_resultComponent.graphics.drawRect(0, 0, width, height);
 			_resultComponent.graphics.endFill();
@@ -395,31 +397,26 @@ package com.betterthantomorrow.components {
 
 		private function configureResultMask():void {
 			_resultMask.graphics.beginFill(0xff0000);
-			_resultMask.graphics.drawRoundRect(0, 0,
-				width - _borderWeight * 2, height - _borderWeight * 2,
+			_resultMask.graphics.drawRoundRect(_borderWeight / 2, _borderWeight / 2,
+				width - _borderWeight, height - _borderWeight,
 				_cornerRadius * 2);
 			_resultMask.graphics.endFill();
 			_resultMask.visible = false;
 		}
 
 		override protected function measure():void {
-			var w:Number = width;
 			if (_mainIcon != null) {
-				_mainIconSize = w * _mainIconPercentSize / 100;
+				_mainIconSize = width * _mainIconPercentSize / 100;
 			}
 			if (_numAvatars > 0) {
 				if (_numAvatars < 3) {
-					_avatarSize = Math.ceil(w / 2);
+					_avatarSize = Math.ceil(width / 2);
 					_avatarSizeBleed = _avatarSize * 2 - width;
 				}
 				else {
-					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
-						if (_numAvatars < Math.pow(c + 1, 2) || _maxAvatars < Math.pow(c + 1, 2)) {
-							_avatarSize = Math.ceil(w / c);
-							_avatarSizeBleed = _avatarSize * c - width;
-							break;
-						}
-					}
+					var c:uint = Math.floor(Math.sqrt(Math.min(_numAvatars, _maxAvatars)));
+					_avatarSize = Math.ceil(width / c);
+					_avatarSizeBleed = _avatarSize * c - width;
 				}
 			}
 		}
@@ -486,18 +483,14 @@ package com.betterthantomorrow.components {
 					_avatars[1].y = _avatarSize;
 				}
 				else {
-					for each (var c:uint in [2, 3, 4, 5, 6, 7, 8, 9, 10]) {
-						if (_numAvatars < Math.pow(c + 1, 2) || _maxAvatars < Math.pow(c + 1, 2)) {
-							for (i = 0; i < c * c && i < _avatars.length; i++) {
-								_avatars[i].x = (i % c) * _avatarSize;
-								_avatars[i].y = Math.floor(i / c) * _avatarSize;
-							}
-							if (_showGridlines) {
-								for (var g:int = 1; g < c; g++) {
-									drawGridCross(grid, _avatarSize * g, _avatarSize * g);
-								}
-							}
-							break;
+					var c:uint = Math.floor(Math.sqrt(Math.min(_numAvatars, _maxAvatars)));
+					for (i = 0; i < c * c && i < _avatars.length; i++) {
+						_avatars[i].x = (i % c) * _avatarSize;
+						_avatars[i].y = Math.floor(i / c) * _avatarSize;
+					}
+					if (_showGridlines) {
+						for (var g:int = 1; g < c; g++) {
+							drawGridCross(grid, _avatarSize * g, _avatarSize * g);
 						}
 					}
 				}
