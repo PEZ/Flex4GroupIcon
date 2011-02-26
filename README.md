@@ -3,25 +3,29 @@
 I needed a component that would represent a group of people. That's what this little project is about.
 
 Basically you create an instance of GroupIcon and set its `avatars` attribute point to a collection of objects implementing the IGroupIconItem interface.
-The interface is super small, just
+For the lazy, there's an Avatar class included that you can simply inherit to get your avatar item objects to behave as the component expects.
 
-`		function get avatarURL():String;'`
-
-The component will load the avatars from those URLs and render a square with 1, 2, 3 and then 4, 9, ... n^2 avatars, supporting up to 100 avatars.
+The component will load the avatars from the URLs or bitmaps provided with the items and render a square with 1, 2, 3 and then 2^2, 3^2, ... n^2 avatars.
 
 ###Component attributes
-For better or for worse, the GroupIcon component inherits from the Spark __Bordered Container__.
-(This to make it easy to set border and background attributes.)
-
-Specific to GroupIcon, you can use the `maxAvatars` attribute to tell the group icon to stop before 100. There's also `mainIconURL` attribute that renders an icon of your choice in the center of the component.
+You can use the `maxAvatars` attribute to tell the group icon to stop before 100. There's also `mainIconURL` attribute that renders an
+icon of your choice in the center of the component.
 
 Here's an example MXML include:
 
-`<bttc:GroupIcon id="gi6" mainIconURL="{_mainIconURL2}" maxAvatars="9" avatars="{_selectedAvatars}" width="100" height="100" x="10" y="205"
-borderVisible="true" backgroundColor="#1C1C1C" backgroundAlpha="1.0" borderWeight="2" cornerRadius="10"/>`
+`<bttc:GroupIcon id="gi6" mainIconURL="{_mainIconURL2}" maxAvatars="9" avatars="{_selectedAvatars}"
+                 width="100" height="100" x="10" y="205"/>`
 
 ##Styling
-The GroupIcon can have grid lines. The following CSS styles control them:
+The GroupIcon can have a background, a border and grid lines. The following CSS styles control them:
+* `borderVisible`, Boolean, default: true
+* `borderWeight`, Length, default: 1
+* `borderPercentWeight`, Number 0-100, default: 0
+* `borderColor`, Color, default: 0x000000
+* `borderAlpha`, Number 0-1, default: 1
+
+* `backgroundColor`, Color, default: 0xffffff
+* `backgroundAlpha`, Number 0-1, default: 1
 
 * `showGridlines`, Boolean, default: false
 * `gridlinesWeight`, Length, default: 2
@@ -40,11 +44,19 @@ The optional "main icon" can also be styled:
 * `mainIconBackgroundColor`, Color, default: 0xffffff
 * `mainIconBackgroundAlpha`, Number 0-1, default: 1
 
-For instance, to style all GroupIcon instances to show almost black gridlines and have a  "main icon" with a dark, somewhat transparent background and an almost white border:
+All `percentWeight` attributes take precedence over any `borderWeight` dittos. Please note the daults, they can be a bit surprising. =)
+
+For instance, to style all GroupIcon instances to have a transparent background, a 2 pixel wide, limegreen border,
+show almost black gridlines and have a "main icon" with a dark, somewhat transparent background and an almost white border:
 `
 		@namespace bttc "com.betterthantomorrow.components.*";
 
 		bttc|GroupIcon {
+			backgroundAlpha: 0.0;
+			borderVisible: true;
+			borderColor: #affe7f;
+			cornerRadius: 10;
+			borderWeight: 2;
 			showGridlines: true;
 			gridlinesColor: #1c1c1c;
 			mainIconPercentSize: 50;
@@ -63,8 +75,8 @@ An interactive test of the component is available here: [http://dl.dropbox.com/u
 Clone (or, preferably, fork-then-clone) this project and then import it into Flash Builder.
 It should get imported as a Flex Library project. Then you have at least two options:
 
-1. Add the gauge library project to the Build Path of the project where you need the GroupIcon component.
-2. Build the library project and copy the resulting swc-file out of the bin/ folder and put it in the libs/ folder of your gauge-needing project.
+1. Add the Flex4GroupIcon library project to the Build Path of the project where you need the component.
+2. Build the library project and copy the resulting swc-file out of the bin/ folder and put it in the libs/ folder of your groupicon-needing project.
 
 Option 1 is to prefer I'd say, because then you can much easier follow what's going on in the debugger, fix bugs and such.
 Option 2 assumes you have a standard setup project with a library folder called libs/ setup in your projects Build Path.
