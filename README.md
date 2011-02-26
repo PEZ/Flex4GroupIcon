@@ -18,6 +18,7 @@ Here's an example MXML include:
 
 ##Styling
 The GroupIcon can have a background, a border and grid lines. The following CSS styles control them:
+
 * `borderVisible`, Boolean, default: true
 * `borderWeight`, Length, default: 1
 * `borderPercentWeight`, Number 0-100, default: 0
