@@ -81,7 +81,7 @@ package com.betterthantomorrow.components {
 		[Bindable] private var _mainIconURL:String = new String();
 		private var _mainIcon:Image;
 		[Bindable] private var _avatarItems:ArrayCollection;
-		private static var _loadedAvatars:Dictionary = new Dictionary();
+		private static var _requestedAvatars:Dictionary = new Dictionary();
 		private var _croppedAvatars:Dictionary;
 		private var _resultComponent:UIComponent;
 		private var _borderShape:Shape;
@@ -272,11 +272,11 @@ package com.betterthantomorrow.components {
 
 			var numLoaded:int = 0;
 			for each (var item:Object in _avatarItems) {
-				if (item.url in _loadedAvatars && _loadedAvatars[item.url].isLoaded) {
+				if (item.url in _requestedAvatars && _requestedAvatars[item.url].isLoaded) {
 					numLoaded++;
 					if (!(item.url in _croppedAvatars)) {
 						var avatarImage:Image = new Image();
-						avatarImage.addChild(AvatarUtils.squareCrop(_loadedAvatars[item.url].bitmap, _avatarSize));
+						avatarImage.addChild(AvatarUtils.squareCrop(_requestedAvatars[item.url].bitmap, _avatarSize));
 						_croppedAvatars[item.url] = avatarImage;	
 						_resultComponent.addChild(avatarImage);
 					}
@@ -330,16 +330,16 @@ package com.betterthantomorrow.components {
 			prepareFullRedraw();
 			var numRequestedActiveAvatars:uint = 0;
 			for each (var avatarItem:Object in _avatarItems) {
-				if (avatarItem.url in _loadedAvatars) {
+				if (avatarItem.url in _requestedAvatars) {
 					numRequestedActiveAvatars++;
 				}
 			}
 			for each (avatarItem in _avatarItems) {
-				if (!(avatarItem.url in _loadedAvatars)) {
+				if (!(avatarItem.url in _requestedAvatars)) {
 					if (!avatarItem.isRequested && numRequestedActiveAvatars < _maxAvatars){
 						avatarItem.isRequested = true;
 						numRequestedActiveAvatars++;
-						_loadedAvatars[avatarItem.url] = avatarItem;
+						_requestedAvatars[avatarItem.url] = avatarItem;
 						loadAvatar(avatarItem);
 					}
 				}
@@ -368,12 +368,18 @@ package com.betterthantomorrow.components {
 			}
 		}
 		
-		private function prepareFullRedraw():void {
-			if (_resultComponent != null) {
-				for (var i:uint = _resultComponent.numChildren; i > 0; i--) {
-					_resultComponent.removeChildAt(i - 1);
+		private function clearComponent(component:UIComponent):void {
+			if (component != null) {
+				for (var i:uint = component.numChildren; i > 0; i--) {
+					component.removeChildAt(i - 1);
 				}
-			}
+			}			
+		}
+
+		private function prepareFullRedraw():void {
+			clearComponent(_resultComponent);
+			clearComponent(_mainIconComponent);
+
 			_croppedAvatars = new Dictionary();
 		}
 
