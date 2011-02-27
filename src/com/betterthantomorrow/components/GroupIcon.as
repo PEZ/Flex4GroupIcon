@@ -421,7 +421,7 @@ package com.betterthantomorrow.components {
 				_mainIconSize = width * _mainIconPercentSize / 100;
 			}
 			if (_numAvatars > 0) {
-				if (_numAvatars < 3) {
+				if (_numAvatars < 4) {
 					_avatarSize = Math.ceil(width / 2);
 					_avatarSizeBleed = _avatarSize * 2 - width;
 				}
@@ -493,6 +493,10 @@ package com.betterthantomorrow.components {
 				if (_numAvatars == 2 && _avatars.length > 1) {
 					_avatars[0].x = _avatarSize;
 					_avatars[1].y = _avatarSize;
+				}
+				else if (_numAvatars == 3 && _avatars.length > 2) {
+					_avatars[1].x = _avatarSize;					
+					_avatars[2].y = _avatarSize;					
 				}
 				else {
 					var c:uint = Math.floor(Math.sqrt(Math.min(_numAvatars, _maxAvatars)));
