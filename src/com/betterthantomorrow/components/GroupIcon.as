@@ -410,6 +410,12 @@ package com.betterthantomorrow.components {
 			_resultMask.visible = false;
 		}
 
+		override public function styleChanged(styleProp:String):void {
+			super.styleChanged(styleProp);
+			
+			invalidateDisplayList();
+		}
+
 		override protected function measure():void {
 			if (_mainIcon != null) {
 				_mainIconSize = width * _mainIconPercentSize / 100;
