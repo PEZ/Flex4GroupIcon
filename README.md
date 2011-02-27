@@ -26,8 +26,7 @@ icon of your choice in the center of the component.
 
 Here's an example MXML include:
 
-`<bttc:GroupIcon id="gi6" mainIconURL="{_mainIconURL}" maxAvatars="9" avatars="{_selectedAvatars}"
-                 width="100" height="100" x="10" y="205"/>`
+`<bttc:GroupIcon id="gi6" mainIconURL="{_mainIconURL}" maxAvatars="9" avatars="{_selectedAvatars}" width="100" height="100" x="10" y="205"/>`
 
 ###Styling
 The GroupIcon can have a background, a border and grid lines. The following CSS styles control them:
