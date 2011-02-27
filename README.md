@@ -5,7 +5,20 @@ I needed a component that would represent a group of people. That's what this li
 Basically you create an instance of GroupIcon and set its `avatars` attribute point to a collection of objects implementing the IGroupIconItem interface.
 For the lazy, there's an Avatar class included that you can simply inherit to get your avatar item objects to behave as the component expects.
 
-The component will load the avatars from the URLs or bitmaps provided with the items and render a square with 1, 2, 3 and then 2^2, 3^2, ... n^2 avatars.
+The component will load the avatars from the URLs or bitmaps provided with the items and render a square with the first 1, 2, 3 and then 2^2, 3^2, ... n^2 avatars.
+
+###Try it
+An interactive test of the component is available here: [http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html](http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html)
+(View source is enabled).
+
+###Cropping
+To start with, the groupicon is always square. It's aimed to represent a group the same way an avatar represents a person.
+And avatars are most often square... But not always, so non-square avatars are cropped by the component. Nothing fancy, just:
+
+* Landscape pictures keep their height and are cropped the retain the horizontal center.
+* Portrait pictures keep their width and are cropped to ratain the vertical top.
+
+This works for keeping a person's face in the remaining square for most profile images.
 
 ###Component attributes
 You can use the `maxAvatars` attribute to tell the group icon to stop before 100. There's also `mainIconURL` attribute that renders an
@@ -13,10 +26,10 @@ icon of your choice in the center of the component.
 
 Here's an example MXML include:
 
-`<bttc:GroupIcon id="gi6" mainIconURL="{_mainIconURL2}" maxAvatars="9" avatars="{_selectedAvatars}"
+`<bttc:GroupIcon id="gi6" mainIconURL="{_mainIconURL}" maxAvatars="9" avatars="{_selectedAvatars}"
                  width="100" height="100" x="10" y="205"/>`
 
-##Styling
+###Styling
 The GroupIcon can have a background, a border and grid lines. The following CSS styles control them:
 
 * `borderVisible`, Boolean, default: true
@@ -47,7 +60,7 @@ The optional "main icon" can also be styled:
 
 All `percentWeight` attributes take precedence over any `borderWeight` dittos. Please note the daults, they can be a bit surprising. =)
 
-For instance, to style all GroupIcon instances to have a transparent background, a 2 pixel wide, limegreen border,
+E.g. to style all GroupIcon instances to have a transparent background, a 2 pixel wide, limegreen border,
 show almost black gridlines and have a "main icon" with a dark, somewhat transparent background and an almost white border:
 `
 		@namespace bttc "com.betterthantomorrow.components.*";
@@ -68,11 +81,7 @@ show almost black gridlines and have a "main icon" with a dark, somewhat transpa
 		}		
 `
 
-###Try it
-An interactive test of the component is available here: [http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html](http://dl.dropbox.com/u/3259215/GroupIconTest/GroupIconTest.html)
-(View source is enabled).
-
-###Quick howto use this in your Flex 4 project:
+###Quick how to use this in your Flex 4 project:
 Clone (or, preferably, fork-then-clone) this project and then import it into Flash Builder.
 It should get imported as a Flex Library project. Then you have at least two options:
 
@@ -93,4 +102,4 @@ myself or pull in from pull requests from others; This is the easiest way I have
 3. Whenever you want to merge in any changes in the main repo:<br>
  `$ git merge upstream/master`
 
-That last step is assuming you want to merge the master branch of course, but that's the only branch there is yet anyway. =)
+That last step is assuming you want to merge the master branch of course.
