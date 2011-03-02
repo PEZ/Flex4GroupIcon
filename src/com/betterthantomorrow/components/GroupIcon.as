@@ -360,7 +360,8 @@ package com.betterthantomorrow.components {
 				_avatarItems.addEventListener(CollectionEvent.COLLECTION_CHANGE,
 					function avatarsUpdated(event:CollectionEvent):void {
 						var c:ArrayCollection = event.currentTarget as ArrayCollection;
-						if (event.kind != CollectionEventKind.RESET) {
+						if (event.kind in [CollectionEventKind.ADD, CollectionEventKind.MOVE,
+							CollectionEventKind.REMOVE, CollectionEventKind.REPLACE]) {
 							loadAvatars();
 						}
 					});
@@ -452,7 +453,7 @@ package com.betterthantomorrow.components {
 				else {
 					_mainIconComponent = new UIComponent();
 					_mainIconComponent.width = _mainIconComponent.height = _mainIconSize;
-					//_mainIconComponent.x = _mainIconComponent.y = (width - _mainIconSize + _mainIconBorderWeight) / 2;
+					_mainIconComponent.x = _mainIconComponent.y = (width - _mainIconSize + _mainIconBorderWeight) / 2;
 					if (_showMainIconBorder) {
 						_mainIconComponent.graphics.lineStyle(_mainIconBorderWeight, _mainIconBorderColor, _mainIconBorderAlpha);
 					}
@@ -463,8 +464,8 @@ package com.betterthantomorrow.components {
 					_mainIcon.width = Math.sqrt(_mainIconSize * _mainIconSize / 2) - _mainIconBorderWeight * 2;
 					_mainIcon.height = _mainIcon.width / ratio;
 					_mainIconComponent.addChild(_mainIcon);
-					_mainIcon.x = (_mainIconSize - _mainIcon.width) / 2 + _mainIconBorderWeight;
-					_mainIcon.y = (_mainIconSize - _mainIcon.height) / 2 + _mainIconBorderWeight;
+					_mainIcon.x = (_mainIconSize - _mainIcon.width) / 2;
+					_mainIcon.y = (_mainIconSize - _mainIcon.height) / 2;
 					_resultComponent.addChild(_mainIconComponent);
 				}
 			}
