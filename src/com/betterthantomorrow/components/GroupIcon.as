@@ -360,8 +360,8 @@ package com.betterthantomorrow.components {
 				_avatarItems.addEventListener(CollectionEvent.COLLECTION_CHANGE,
 					function avatarsUpdated(event:CollectionEvent):void {
 						var c:ArrayCollection = event.currentTarget as ArrayCollection;
-						if (event.kind in [CollectionEventKind.ADD, CollectionEventKind.MOVE,
-							CollectionEventKind.REMOVE, CollectionEventKind.REPLACE]) {
+						if ([CollectionEventKind.ADD, CollectionEventKind.MOVE, CollectionEventKind.REMOVE,
+							CollectionEventKind.REPLACE, CollectionEventKind.REFRESH].indexOf(event.kind) > -1) {
 							loadAvatars();
 						}
 					});
